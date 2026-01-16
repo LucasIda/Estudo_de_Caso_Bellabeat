@@ -375,7 +375,8 @@ ORDER BY
     very_active_minutes,
     fairly_active_minutes,
     (very_active_minutes + fairly_active_minutes) AS total_active_mins
-  FROM `my-first-project-479822.bellabeat_case_study.daily_activity`
+  FROM 
+    `my-first-project-479822.bellabeat_case_study.daily_activity`
 ),
 resumo_sono AS (
   SELECT
@@ -384,7 +385,8 @@ resumo_sono AS (
     total_minutes_asleep,
     total_time_in_bed,
     ROUND((total_minutes_asleep / total_time_in_bed) * 100, 2) AS sleep_efficiency
-  FROM `my-first-project-479822.bellabeat_case_study.sleep_day`
+  FROM
+    `my-first-project-479822.bellabeat_case_study.sleep_day`
 )
 SELECT
   CASE
@@ -395,12 +397,15 @@ SELECT
   ROUND(AVG(s.total_minutes_asleep), 0) AS media_minutos_dormidos,
   ROUND(AVG(s.sleep_efficiency), 2) AS media_eficiencia_sono,
   COUNT(*) AS qtd_registros
-FROM resumo_atividade AS a
+FROM 
+  resumo_atividade AS a
 INNER JOIN resumo_sono AS s
   ON a.id = s.id
   AND a.activity_date = s.sleep_date
-GROUP BY 1
-ORDER BY 1;</code></pre>
+GROUP BY 
+  1
+ORDER BY 
+  1;</code></pre>
 
   <p>Resultado:</p>
   <table>
@@ -435,7 +440,8 @@ ORDER BY 1;</code></pre>
       WHEN (very_active_minutes + fairly_active_minutes) BETWEEN 21 AND 60 THEN 'Ativo'
       ELSE 'Sedentário'
     END AS perfil_do_dia
-  FROM `my-first-project-479822.bellabeat_case_study.daily_activity`
+  FROM 
+    `my-first-project-479822.bellabeat_case_study.daily_activity`
 ),
 hourly_joined AS (
   SELECT
@@ -443,7 +449,8 @@ hourly_joined AS (
     EXTRACT(HOUR FROM h.activity_hour) AS hora,
     h.step_total,
     p.perfil_do_dia
-  FROM `my-first-project-479822.bellabeat_case_study.hourly_steps` AS h
+  FROM 
+    `my-first-project-479822.bellabeat_case_study.hourly_steps` AS h
   INNER JOIN perfil_diario AS p
     ON h.id = p.id
     AND DATE(h.activity_hour) = p.activity_date
@@ -453,9 +460,12 @@ SELECT
   ROUND(AVG(CASE WHEN perfil_do_dia = 'Alta Intensidade' THEN step_total END), 0) AS media_alta_intensidade,
   ROUND(AVG(CASE WHEN perfil_do_dia = 'Ativo' THEN step_total END), 0) AS media_ativo,
   ROUND(AVG(CASE WHEN perfil_do_dia = 'Sedentário' THEN step_total END), 0) AS media_sedentario
-FROM hourly_joined
-GROUP BY hora
-ORDER BY hora;</code></pre>
+FROM 
+  hourly_joined
+GROUP BY 
+  hora
+ORDER BY 
+  hora;</code></pre>
 
   <p>
     Este resultado possibilita criar um gráfico de linhas comparando os três perfis e verificar se o perfil de alta intensidade
@@ -473,9 +483,12 @@ ORDER BY hora;</code></pre>
   ROUND(AVG(total_minutes_asleep), 0) AS media_minutos_totais_dormidos,
   ROUND(AVG(total_time_in_bed - total_minutes_asleep), 0) AS media_tempo_acordado_na_cama,
   ROUND(AVG(total_minutes_asleep / total_time_in_bed * 100), 2) AS eficiencia_media_percentual
-FROM `my-first-project-479822.bellabeat_case_study.sleep_day`
-GROUP BY tipo_de_sono
-ORDER BY eficiencia_media_percentual DESC;</code></pre>
+FROM 
+  `my-first-project-479822.bellabeat_case_study.sleep_day`
+GROUP BY 
+  tipo_de_sono
+ORDER BY 
+  eficiencia_media_percentual DESC;</code></pre>
 
   <p>Resultado:</p>
   <table>
@@ -505,14 +518,16 @@ ORDER BY eficiencia_media_percentual DESC;</code></pre>
     id,
     activity_date,
     total_steps
-  FROM `my-first-project-479822.bellabeat_case_study.daily_activity`
+  FROM 
+    `my-first-project-479822.bellabeat_case_study.daily_activity`
 ),
 sono_resumo AS (
   SELECT
     id,
     DATE(sleep_day) AS sleep_date,
     total_minutes_asleep
-  FROM `my-first-project-479822.bellabeat_case_study.sleep_day`
+  FROM 
+    `my-first-project-479822.bellabeat_case_study.sleep_day`
 )
 SELECT
   CASE
@@ -521,11 +536,13 @@ SELECT
     ELSE 'Mais de 9 horas'
   END AS faixa_sono,
   AVG(atv.total_steps) AS media_passos
-FROM atividade_resumo atv
+FROM 
+  atividade_resumo atv
 INNER JOIN sono_resumo sono
   ON atv.id = sono.id
   AND atv.activity_date = sono.sleep_date
-GROUP BY faixa_sono;</code></pre>
+GROUP BY 
+  faixa_sono;</code></pre>
 
   <p>Resultado:</p>
   <table>
@@ -556,26 +573,31 @@ GROUP BY faixa_sono;</code></pre>
       WHEN (very_active_minutes + fairly_active_minutes) BETWEEN 21 AND 60 THEN '2. Ativo'
       ELSE '3. Sedentário'
     END AS perfil_do_dia
-  FROM `my-first-project-479822.bellabeat_case_study.daily_activity`
+  FROM 
+    `my-first-project-479822.bellabeat_case_study.daily_activity`
 ),
 resumo_sono AS (
   SELECT
     id,
     DATE(sleep_day) AS data_sono,
     total_minutes_asleep
-  FROM `my-first-project-479822.bellabeat_case_study.sleep_day`
+  FROM 
+    `my-first-project-479822.bellabeat_case_study.sleep_day`
 )
 SELECT
   a.perfil_do_dia,
   ROUND(AVG(s.total_minutes_asleep), 0) AS media_minutos_sono,
   ROUND(AVG(s.total_minutes_asleep) / 60, 1) AS media_horas_sono,
   COUNT(*) AS total_registros
-FROM perfil_atividade AS a
+FROM 
+  perfil_atividade AS a
 INNER JOIN resumo_sono AS s
   ON a.id = s.id
   AND a.activity_date = s.data_sono
-GROUP BY 1
-ORDER BY 1;</code></pre>
+GROUP BY 
+  1
+ORDER BY 
+  1;</code></pre>
 
   <p>Resultado:</p>
   <table>
