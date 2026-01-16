@@ -104,7 +104,7 @@
     por meio da análise de dados de uso de dispositivos inteligentes.
   </p>
 
-  <h3>Objetivo de Negócio</h3>
+  <h3 id="objetivo-de-negocio">Objetivo de Negócio</h3>
   <p>
     O objetivo deste estudo de caso é analisar dados de atividade física de consumidores para identificar tendências de comportamento e saúde.
     Esses insights irão apoiar uma nova estratégia de marketing, com foco em otimizar o engajamento das usuárias e identificar novos nichos de
@@ -129,7 +129,7 @@
 
   <h2>Preparar e Processar</h2>
 
-  <h3>Coleta e seleção de dados</h3>
+  <h3 id="coleta-e-selecao-de-dados">Coleta e seleção de dados</h3>
   <p>
     Utilizei o conjunto de dados público <strong>FitBit Fitness Tracker Data</strong> (Kaggle), que contém dados de monitoramento pessoal de 30 usuários.
     Devido à natureza do problema de negócio, selecionei estrategicamente quatro conjuntos de dados para compor a análise:
@@ -141,7 +141,7 @@
     <li><strong>weightLogInfo_merged.csv</strong>: monitoramento de peso e IMC.</li>
   </ul>
 
-  <h3>Ecossistema tecnológico e processo de ETL</h3>
+  <h3 id="ecossistema-tecnologico-e-processo-de-etl">Ecossistema tecnológico e processo de ETL</h3>
   <p>
     Para garantir eficiência no processamento e permitir o cruzamento de grandes volumes de dados, estruturei o fluxo de trabalho utilizando:
   </p>
@@ -157,7 +157,7 @@
     </li>
   </ul>
 
-  <h3>Garantia de integridade e padronização</h3>
+  <h3 id="garantia-de-integridade-e-padronizacao">Garantia de integridade e padronização</h3>
   <p>Toda a documentação da limpeza foi centralizada em arquivos <code>.Rmd</code>. O processo de tratamento incluiu:</p>
   <ul>
     <li><strong>Padronização de nomenclatura</strong>: conversão de colunas para <em>snake_case</em> (ex.: <code>TotalSteps</code> → <code>total_steps</code>) visando compatibilidade com SQL.</li>
@@ -165,7 +165,7 @@
     <li><strong>Validação de limites</strong>: checagem de valores extremos para garantir que o tempo monitorado não excedesse 1.440 minutos (24h) por dia.</li>
   </ul>
 
-  <h3>Processo de limpeza do conjunto <code>weightLogInfo_merged.csv</code></h3>
+  <h3 id="processo-de-limpeza-do-conjunto-weightloginfomergedcsv">Processo de limpeza do conjunto <code>weightLogInfo_merged.csv</code></h3>
   <p><em>Observação: o conteúdo abaixo foi originalmente estruturado em RMarkdown (Rmd) e foi convertido para HTML mantendo a lógica e o fluxo.</em></p>
 
   <h4>Transformação e validação dos dados</h4>
@@ -270,7 +270,7 @@ head(weightLogInfo_clean)</code></pre>
     Utilizando SQL no BigQuery, realizei uma análise exploratória para identificar tendências e gerar insights a partir dos dados disponíveis.
   </p>
 
-  <h3>Segmentação de usuárias por perfil de atividade</h3>
+  <h3 id="segmentacao-de-usuarias-por-perfil-de-atividade">Segmentação de usuárias por perfil de atividade</h3>
   <pre><code class="language-sql">WITH user_segment AS (
   SELECT
     id,
@@ -319,7 +319,7 @@ ORDER BY
     que facilitem o início e manutenção de hábitos.
   </p>
 
-  <h3>Horários com maiores tendências de atividade</h3>
+  <h3 id="horarios-com-maiores-tendencias-de-atividade">Horários com maiores tendências de atividade</h3>
   <pre><code class="language-sql">SELECT
   EXTRACT(HOUR FROM activity_hour) AS hora_do_dia,
   AVG(step_total) AS media_passos
@@ -366,7 +366,7 @@ ORDER BY
     </tbody>
   </table>
 
-  <h3>Relação entre intensidade de atividade e eficiência do sono</h3>
+  <h3 id="relacao-entre-intensidade-de-atividade-e-eficiencia-do-sono">Relação entre intensidade de atividade e eficiência do sono</h3>
   <pre><code class="language-sql">WITH resumo_atividade AS (
   SELECT
     id,
@@ -425,7 +425,7 @@ ORDER BY 1;</code></pre>
     período noturno e recomendem ações de relaxamento (ex.: respiração guiada, alongamento leve, meditação).
   </p>
 
-  <h3>Pico de atividade por perfil diário</h3>
+  <h3 id="pico-de-atividade-por-perfil-diario">Pico de atividade por perfil diário</h3>
   <pre><code class="language-sql">WITH perfil_diario AS (
   SELECT
     id,
@@ -463,7 +463,7 @@ ORDER BY hora;</code></pre>
     aos perfis menos ativos, estimulando metas progressivas.
   </p>
 
-  <h3>Eficiência do sono por tipo de sono</h3>
+  <h3 id="eficiencia-do-sono-por-tipo-de-sono">Eficiência do sono por tipo de sono</h3>
   <pre><code class="language-sql">SELECT
   CASE
     WHEN total_sleep_records = 1 THEN 'Sono Único (Consolidado)'
@@ -499,7 +499,7 @@ ORDER BY eficiencia_media_percentual DESC;</code></pre>
     — embora possa impactar outros aspectos (ex.: rotina e bem-estar), que exigiriam dados adicionais para validação.
   </p>
 
-  <h3>Média de passos por faixa de sono</h3>
+  <h3 id="media-de-passos-por-faixa-de-sono">Média de passos por faixa de sono</h3>
   <pre><code class="language-sql">WITH atividade_resumo AS (
   SELECT
     id,
@@ -546,7 +546,7 @@ GROUP BY faixa_sono;</code></pre>
     Próximo passo analítico: entender se o grupo que dorme menos tem mais passos por estar mais tempo acordado ou por praticar mais atividade de fato.
   </p>
 
-  <h3>Perfil de atividade vs. média de sono</h3>
+  <h3 id="perfil-de-atividade-vs-media-de-sono">Perfil de atividade vs. média de sono</h3>
   <pre><code class="language-sql">WITH perfil_atividade AS (
   SELECT
     id,
@@ -626,28 +626,28 @@ ORDER BY 1;</code></pre>
 
   <hr />
 
-  <h2>Visualização (Tableau)</h2>
+  <h2 id="visualizacao-tableau">Visualização (Tableau)</h2>
   <p><em>Observação: abaixo estão as seções de visualização. Se você tiver os links públicos do Tableau ou imagens exportadas, pode substituí-las nos placeholders.</em></p>
 
-  <h3>Quantidade de usuárias por perfil de atividade</h3>
+  <h3 id="quantidade-de-usuarias-por-perfil-de-atividade">Quantidade de usuárias por perfil de atividade</h3>
   <p>
     <em>(Inserir imagem ou link do Tableau aqui)</em><br />
     Visualização para comparar a participação percentual de cada perfil, evidenciando uma distribuição relativamente equilibrada.
   </p>
 
-  <h3>Relação entre sono e eficiência</h3>
+  <h3 id="relacao-entre-sono-e-eficiencia">Relação entre sono e eficiência</h3>
   <p>
     <em>(Inserir imagem ou link do Tableau aqui)</em><br />
     Visualização indicando que perfis muito ativos tendem a dormir menos e, em média, com menor eficiência.
   </p>
 
-  <h3>Média de passos por hora do dia, por perfil</h3>
+  <h3 id="media-de-passos-por-hora-do-dia-por-perfil">Média de passos por hora do dia, por perfil</h3>
   <p>
     <em>(Inserir imagem ou link do Tableau aqui)</em><br />
     Visualização mostrando pico de atividade entre 17h e 19h no perfil muito ativo, próximo ao fim do dia.
   </p>
 
-  <h3>Eficiência do sono vs. quantidade de sono</h3>
+  <h3 id="eficiencia-do-sono-vs-quantidade-de-sono">Eficiência do sono vs. quantidade de sono</h3>
   <p>
     <em>(Inserir imagem ou link do Tableau aqui)</em><br />
     Visualização reforçando baixa correlação entre tempo total de sono e eficiência, sugerindo que qualidade não é explicada apenas pela duração.
@@ -655,9 +655,9 @@ ORDER BY 1;</code></pre>
 
   <hr />
 
-  <h2>Recomendações de Marketing para a Bellabeat</h2>
+  <h2 id="recomendacoes-de-marketing-para-a-bellabeat">Recomendações de Marketing para a Bellabeat</h2>
 
-  <h3>Estratégia 1: Otimização da recuperação (público de alta intensidade)</h3>
+  <h3 id="estrategia-1-otimizacao-da-recuperacao-publico-de-alta-intensidade">Estratégia 1: Otimização da recuperação (público de alta intensidade)</h3>
   <p>
     A análise mostrou que usuárias com alta intensidade de atividade física apresentam, em média, menor quantidade de sono e menor eficiência,
     frequentemente associadas a picos de atividade no período noturno (17h–19h).
@@ -671,7 +671,7 @@ ORDER BY 1;</code></pre>
     treinos tardios e recomendem rotinas de “higiene do sono” (ex.: meditação guiada, respiração, alongamento leve) para reduzir estresse antes de dormir.
   </p>
 
-  <h3>Estratégia 2: Gamificação e vitalidade (público sedentário)</h3>
+  <h3 id="estrategia-2-gamificacao-e-vitalidade-publico-sedentario">Estratégia 2: Gamificação e vitalidade (público sedentário)</h3>
   <p>
     Identifiquei um grupo relevante de usuárias sedentárias que, apesar de dormirem dentro da faixa recomendada, não mantêm uma rotina de atividade física constante.
   </p>
