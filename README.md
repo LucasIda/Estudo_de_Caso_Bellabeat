@@ -15,19 +15,21 @@
 
   <pre><code>bellabeat-case-study/
 ├── data/
-│   ├── raw/                       # Dados brutos
-│   └── processed/                 # CSVs limpos exportados pelo R
-│   └── sql_query/                 # CSVs de consultas realizadas em SQL
+│   ├── raw/                                 # Dados brutos
+│   └── processed/                           # CSVs limpos exportados pelo R
+│   └── sql_query/                           # CSVs de consultas realizadas em SQL
 ├── scripts/
-│   ├── dailyActivity_cleaning.R   # Código R de limpeza e padronização para cada conjunto de dados
+│   ├── dailyActivity_cleaning.R             # Código R de limpeza e padronização para cada conjunto de dados
 ├── visuals/
-│   ├── charts/                    # PNGs exportados do Tableau
-│   └── dashboard_link.txt         # Link para o Tableau Public
+│   ├── charts/                              # PNGs exportados do Tableau
+│   └── dashboard_link.txt                   # Link para o Tableau Public
 ├── docs/
-│   ├── r_cleaning_process         # Documento do processo de limpeza com R
-│   └── case_study.docx            # Documento original do estudo de caso
+│   ├── r_cleaning_process/
+│   │   └── transform_data_to_bigquery.Rmd   # Documento do processo de limpeza com R
+│   ├── case_study.docx                      # Documento original do estudo de caso
+│   └── case_study_presentation.pptx         # Apresentação executiva do projeto
 │    
-└── README.md                      # Guia do projeto (este arquivo)
+└── README.md                                # Guia do projeto (este arquivo)
 </code></pre>
 
   <h3 id="como-navegar">Como navegar</h3>
@@ -35,6 +37,14 @@
     <li><strong>Quer ver a análise direto?</strong> Vá para: <a href="#analisar">Analisar</a> e <a href="#insights-consolidados">Insights consolidados</a>.</li>
     <li><strong>Quer validar o processo técnico?</strong> Vá para: <a href="#preparar-e-processar">Preparar e Processar</a> e confira a estrutura de scripts em <a href="#estrutura-do-projeto">Estrutura do projeto</a>.</li>
     <li><strong>Quer ver recomendações finais?</strong> Vá para: <a href="#recomendacoes-de-marketing-para-a-bellabeat">Recomendações</a>.</li>
+  </ul>
+
+  <h3 id="tech-stack">Tech Stack</h3>
+  <ul>
+    <li><strong>R (RStudio)</strong>: limpeza, padronização e exportação de dados tratados (<code>data/processed</code>).</li>
+    <li><strong>BigQuery (SQL)</strong>: consultas analíticas e consolidação de métricas para geração de insights.</li>
+    <li><strong>Tableau</strong>: criação de gráficos e painéis para visualização e storytelling.</li>
+    <li><strong>Git/GitHub</strong>: versionamento do projeto, rastreabilidade e documentação no README.</li>
   </ul>
 
   <hr />
@@ -167,6 +177,13 @@
 
   <h3 id="processo-de-limpeza-do-conjunto-weightloginfomergedcsv">Processo de limpeza do conjunto <code>weightLogInfo_merged.csv</code></h3>
   <p><em>Observação: o conteúdo abaixo foi originalmente estruturado em RMarkdown (Rmd) e foi convertido para HTML mantendo a lógica e o fluxo.</em></p>
+
+  <p>
+    <strong>Arquivo de documentação técnica completa:</strong><br>
+    <a href="bellabeat-case-study/docs/r_cleaning_process/transform_data_to_bigquery.Rmd" target="_blank">
+      transform_data_to_bigquery.Rmd
+    </a>
+  </p>
 
   <h4>Transformação e validação dos dados</h4>
   <p>
@@ -653,25 +670,45 @@ ORDER BY
 
   <h3 id="quantidade-de-usuarias-por-perfil-de-atividade">Quantidade de usuárias por perfil de atividade</h3>
   <p>
-    ![Quantidade de usuárias por perfil de atividade](bellabeat-case-study/visuals/charts/percentage_of_users.png)
+    <img
+    src="bellabeat-case-study/visuals/charts/percentage_of_users.png"
+    alt="Quantidade de usuárias por perfil de atividade"
+    width="700"
+    />
+    <br>
     Visualização para comparar a participação percentual de cada perfil, evidenciando uma distribuição relativamente equilibrada.
   </p>
 
   <h3 id="relacao-entre-sono-e-eficiencia">Relação entre sono e eficiência</h3>
   <p>
-    <em>(Inserir imagem ou link do Tableau aqui)</em><br />
+    <img
+    src="bellabeat-case-study/visuals/charts/sleep_and_efficiency.png"
+    alt="Relação entre sono e eficiência"
+    width="1000"
+    />
+    <br>
     Visualização indicando que perfis muito ativos tendem a dormir menos e, em média, com menor eficiência.
   </p>
 
   <h3 id="media-de-passos-por-hora-do-dia-por-perfil">Média de passos por hora do dia, por perfil</h3>
   <p>
-    <em>(Inserir imagem ou link do Tableau aqui)</em><br />
+    <img
+    src="bellabeat-case-study/visuals/charts/steps_per_hour.png"
+    alt="Média de passos por hora do dia, por perfil"
+    width="1000"
+    />
+    <br>
     Visualização mostrando pico de atividade entre 17h e 19h no perfil muito ativo, próximo ao fim do dia.
   </p>
 
   <h3 id="eficiencia-do-sono-vs-quantidade-de-sono">Eficiência do sono vs. quantidade de sono</h3>
   <p>
-    <em>(Inserir imagem ou link do Tableau aqui)</em><br />
+    <img
+    src="bellabeat-case-study/visuals/charts/efficiency_by_sllep_time.png"
+    alt="Eficiência do sono vs. quantidade de sono"
+    width="1000"
+    />
+    <br>
     Visualização reforçando baixa correlação entre tempo total de sono e eficiência, sugerindo que qualidade não é explicada apenas pela duração.
   </p>
 
@@ -705,3 +742,26 @@ ORDER BY
     com mensagens que conectem movimento e benefícios imediatos (humor, disposição, qualidade do sono), aumentando engajamento e retenção.
   </p>
 </section>
+
+<h2 id="apresentacao-executiva">Apresentação Executiva</h2>
+
+<p>
+  Além deste README técnico, foi desenvolvida uma apresentação executiva com foco em tomada de decisão
+  e direcionamento estratégico.
+</p>
+
+<p>
+  <strong>Apresentação para o time executivo:</strong><br>
+  <a href="bellabeat-case-study/docs/case_study_presentation.pptx" target="_blank">
+    case_study_presentation.pptx
+  </a>
+</p>
+
+<p>
+  A apresentação consolida:
+</p>
+<ul>
+  <li>Principais insights de comportamento das usuárias</li>
+  <li>Implicações estratégicas para marketing e produto</li>
+  <li>Recomendações acionáveis baseadas nos dados analisados</li>
+</ul>
