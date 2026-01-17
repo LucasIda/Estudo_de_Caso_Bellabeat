@@ -1,0 +1,4 @@
+nivel_intensidade_dia,media_minutos_dormidos,media_eficiencia_sono,qtd_registros
+1. Baixa Intensidade (< 20 min),453.0,92.85,172
+2. Intensidade Média (20-60 min),408.0,93.0,116
+3. Alta Intensidade (> 60 min),382.0,88.66,122

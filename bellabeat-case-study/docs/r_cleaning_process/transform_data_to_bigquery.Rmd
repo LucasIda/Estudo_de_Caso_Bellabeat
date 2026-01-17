@@ -1,0 +1,483 @@
+---
+title: "Adequação dos dados para análise"
+author: "Lucas Ida"
+date: "2026-01-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Tranformação e validação dos dados
+
+Antes de realizar o upload do conjunto de dado no BigQuery, realizamos a transformação e validação dos dados para evitar erros. Formato de data não aceita, dados duplicados, erro de digitação, entre outros.
+
+### Importação de pacotes e bibliotecas
+
+Foi utilizado o 'tidyverse' e 'lubridate' para realizar o processamento e transformação.
+
+```{r Importação de bibliotecas e pacotes, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(lubridate)
+library(janitor)
+```
+
+## weightLogInfo_merged.csv
+
+### Importação dos dados csv
+
+```{r Importação de dados weightLogInfo_merged.csv}
+weightLogInfo <- read_csv("weightLogInfo_merged.csv")
+```
+
+### Validação da estrutura dos dados
+
+Com a função 'str' validamos a estrutura dos dados, se cada coluna está com o seu devido formato.
+
+```{r Estrutura dos dados}
+str(weightLogInfo)
+```
+
+Validamos que os campos estão corretos com o tipo num, chr e logi.
+
+### Adequação do formato da data
+
+Foi realizada o tranformação do formato da data para o padrão ISO, evitando erros na importação do csv para o BigQuery.
+
+```{r Conversão do formato da data}
+weightLogInfo_clean <- weightLogInfo %>% 
+  #Tranformação da data no formato ISO para ingestão no BigQuery
+  mutate(Date = mdy_hms(Date)) %>%
+  #Remoção de linhas duplicadas (idênticas)
+  distinct()
+
+head(weightLogInfo_clean)
+```
+
+### Validação da conversão kg -> lbs
+
+Foi utilizada uma estrutura de funções para validar a transformação do kg para lbs, com uma margem de 0,01 de diferença como aceitável.
+
+```{r Validação da conversão kg -> lbs}
+df_validation <- weightLogInfo_clean %>% 
+  mutate(
+    #1 kg aproximado para 2.20462 lbs
+    weight_calc = WeightKg * 2.20462,
+    #Cálculo da diferença absoluta para evitar problemas com casas decimais
+    diff_check = abs(WeightPounds - weight_calc)
+  )
+
+conversion_error <- df_validation %>% 
+  filter(diff_check > 0.01)
+
+nrow(conversion_error)
+```
+
+Como não existe nenhuma linha indicando um erro de conversão, podemos assumir como correto o peso em lbs.
+
+### Identificação de valores atípicos
+
+Foi utilizado a função 'max' e 'min' para validar os valores máximos e mínimos de peso e BMI (IMC).
+
+```{r Validação de valores atípicos}
+df_outliers <- weightLogInfo_clean %>% 
+  summarise(
+    #Máximo e mínimo do peso em kg
+    max_weight_kg = max(WeightKg),
+    min_weight_kg = min(WeightKg),
+    #Máximo e mínimo do BMI
+    max_bmi = max(BMI),
+    min_bmi = min(BMI)
+  )
+
+head(df_outliers)
+```
+
+Como os valores máximos e mínimos estão dentro do aceitável, será considerado como válido os valores de peso e BMI (IMC).
+
+### Validação de erro de digitação no valor lógico
+
+Com a consulta abaixo, será possível validar quais são os valores armazenados em IsManualReport, para verificar se não há nenhum valor além de TRUE e FALSE.
+
+```{r Validar valores de IsManualReport}
+table(weightLogInfo_clean$IsManualReport, useNA = "always")
+```
+
+Como retornou apenas TRUE e FALSE, podemos garantir que a lógica booleana está correta para essa coluna.
+
+### Validação do comprimento do Id e LogId
+
+Para garantir que não houve nenhum erro na formatação no Id e LogId que tenha gerado alguma inconsistência, utilizamos a função abaixo para validar o comprimento dos valores, se são uniformes.
+
+```{r Validar comprimento do Id e LogId}
+table(nchar(as.character(weightLogInfo_clean$Id)))
+
+table(nchar(as.character(weightLogInfo_clean$LogId)))
+```
+
+Com essa consulta, podemos validar que todos os valores de Id possui 10 caracteres e LogId com 13 caracteres, demonstrando consistência.
+
+### Consulta de valores nulos
+
+Com a consulta abaixo, será validado se há valores nulos em alguma das colunas principais do conjunto de dados.
+
+```{r Validar valores nulos}
+colSums(is.na(weightLogInfo_clean))
+```
+
+Foi possível verificar que há valores nulos apenas na coluna Fat, representando aproximadamente 97% dos dados. Os campos essenciais como Id, LogId e Date estão todos consistentes.
+
+### Padronização do nome das colunas para snake_case
+
+Utilizamos o pacote janitor para realizar a conversão do nome das colunas para snake_case, padrão para manipulação no SQL.
+
+```{r Conversão para snake_case}
+weightLogInfo_clean <- weightLogInfo_clean %>% 
+  clean_names()
+
+head(weightLogInfo_clean)
+```
+
+### Exportação do csv limpo
+
+Concluída a limpeza dos dados, realizei a exportação do csv para seguir com a importação no BigQuery.
+
+```{r Exportar o csv limpo}
+write_csv(weightLogInfo_clean, "weightLogInfo_clean.csv")
+```
+
+Realizado a limpeza e tratamento demonstrado nos passos acima, foi realizado o upload do conjunto de dados com sucesso para o BigQuery. Abaixo segue o processo de limpeza dos outros 4 arquivso principais que serão utilizados para o projeto.
+
+
+## dailyActivity_merged.csv
+
+### Importação dos dados csv
+
+```{r Importação de dados dailyActivity_merged.csv}
+dailyActivity <- read_csv("dailyActivity_merged.csv")
+```
+
+### Validação da estrutura dos dados
+
+Com a função 'str' validamos a estrutura dos dados, se cada coluna está com o seu devido formato.
+
+```{r Estrutura dos dados dailyActivity}
+str(dailyActivity)
+```
+
+### Adequação do formato da data e excluir duplicatas
+
+Foi realizada o tranformação do formato da data para o padrão ISO, evitando erros na importação do csv para o BigQuery, juntamente com a exclusão de duplicatas com o 'distinct'.
+
+```{r Ajuste de data e duplicatas dailyActivity}
+dailyActivity_clean <- dailyActivity %>% 
+  #Tranformação da data no formato ISO
+  mutate(ActivityDate = mdy(ActivityDate)) %>% 
+  #Remoção de linhas duplicadas (idênticas)
+  distinct()
+
+head(dailyActivity_clean)
+```
+
+Foi validado a conversão correta do formato da data para yyyy-mm-dd, e sem alteração na quantidade de linhas, significando não haver nenhuma linha duplicada.
+
+### Validação da distância total
+
+Para garantir que os valores da coluna TotalDistance seja consistente, foi realizado a soma das distâncias categorizadas em VeryActive, ModratelyActive, LightActive e SedentaryActive.
+
+```{r Validar a distância total dailyActivity}
+df_validation <- dailyActivity_clean %>% 
+  mutate(
+    distance_calc = VeryActiveDistance + ModeratelyActiveDistance + LightActiveDistance + SedentaryActiveDistance,
+    diff_check = abs(TotalDistance - distance_calc)
+  )
+
+calculation_error <- df_validation %>% 
+  filter(diff_check > 0.1)
+
+nrow(calculation_error)
+```
+
+Foi possível identificar 24 linhas na qual o resultado divergiu com o valor da coluna. Ao realizar uma inspeção, foi possível notar que teriam 2 possibilidades para resultar no erro:
+
+* Alguns registros não foram categorizados pelo sistema em cada categoria, resultando valores zerados em todos eles.
+* Valores inseridos manualmente pelo usuário não foram categorizados em cada intensidade.
+
+Como esses valores divergêntes representam apenas 2,5% do conjunto de dados, irei mante-los, mas ciênte dessa inconsistência no momento da análise que será realizado posteriormente.
+
+### Validacão do tempo total
+
+Para garantir consistência na análise, será validado se a soma de todos os tempos resultam em 1440 minutos (24 horas).
+
+```{r Diferença no tempo total}
+df_validation_time <- dailyActivity_clean %>% 
+  mutate(
+    time_calc = VeryActiveMinutes + FairlyActiveMinutes + LightlyActiveMinutes + SedentaryMinutes,
+    diff_time_check = abs(1440 - time_calc)
+  )
+
+calculation_time_error <- df_validation_time %>% 
+  #60 minutos de tolerância no erro absoluto
+  filter(diff_time_check > 60)
+
+nrow(calculation_time_error)
+```
+
+Foi retornado 450 registros na qual a soma do tempo diverge mais de 60 minutos de um dia completo.
+Para verificarmos qual é o tempo máximo e mínimo no cálculo realizado, utilizei da seguinte função.
+
+```{r Máximo e mínimo do cálculo}
+df_validation_time %>% 
+  summarize(
+    max_sum = max(time_calc),
+    min_sum = min(time_calc)
+  )
+```
+
+Com essa consulta, foi possível validar que o valor máximo é de 1440 minutos, demonstrando consistência nos dados, não havendo valores maiores que 24 horas no dia.
+Esse resultado permite termos o seguinte insight:
+
+* O tempo é menor do que 24 horas, pois os usuários tiram o relógio para carregar, realizar alguma atividade específico, desconforto, entre outros motivos.
+* Dias com menos de 60 minutos de uso significam que o usuário praticamente não usou o dispositivo.
+
+Para a análise de atividade calórico será considerado apenas os registros de dias com uso maior que 1020 minutos (17 horas) que seria equivalente ao tempo acordado.
+
+### Validação do comprimento do Id
+
+Para validarmos se não houve nenhum erro na formatação do Id, executemos a função abaixo.
+
+```{r Comprimento do Id em dailyActivity}
+table(nchar(as.character(dailyActivity_clean$Id)))
+```
+
+Podemos validar que todos os dados estão consistêntes com o mesmo comprimento.
+
+### Consulta de valores nulos
+
+Executemos a consulta abaixo para validar que não há valores nulos.
+
+```{r Consultar valores nulos dailyActivity}
+colSums(is.na(dailyActivity_clean))
+```
+
+### Padronização do nome das colunas para snake_case
+
+Utilizamos o pacote janitor para realizar a conversão do nome das colunas para snake_case, padrão para manipulação no SQL.
+
+```{r dailyActivity para snake_case}
+dailyActivity_clean <- dailyActivity_clean %>% 
+  clean_names()
+
+head(dailyActivity_clean)
+```
+
+### Exportação do csv limpo
+
+Concluída a limpeza dos dados, realizei a exportação do csv para seguir com a importação no BigQuery.
+
+```{r Exportação dailyActivity_clean}
+write_csv(dailyActivity_clean, "dailyActividy_clean.csv")
+```
+
+
+## hourlySteps_merged.csv
+
+### Importação dos dados csv
+
+```{r Importar hourlySteps_merged.csv}
+hourlySteps <- read_csv("hourlySteps_merged.csv")
+```
+
+### Validação da estrutura dos dados
+
+Com a função ‘str’ validamos a estrutura dos dados, se cada coluna está com o seu devido formato.
+
+```{r}
+str(hourlySteps)
+```
+
+### Adequação do formato da data e excluir duplicatas
+
+Foi realizada o tranformação do formato da data para o padrão ISO, evitando erros na importação do csv para o BigQuery, juntamente com a exclusão de duplicatas com o ‘distinct’.
+
+```{r Data no formato ISO hourlySteps}
+hourlySteps_clean <- hourlySteps %>% 
+  #Tranformação da data no formato ISO
+  mutate(ActivityHour = mdy_hms(ActivityHour)) %>% 
+  #Remoção de linhas duplicadas (idênticas)
+  distinct()
+
+nrow(hourlySteps)
+nrow(hourlySteps_clean)
+```
+
+Foi validado a conversão correta do formato da data para yyyy-mm-dd hh-mm-ss, e sem alteração na quantidade de linhas, significando não haver nenhuma linha duplicada.
+
+### Máximo e mínimo dos passos
+
+Utilizamos o 'summarize' abaixo para verificar o valor máximo e mínimo de passos, para verificar se não há valores negativos ou absurdos.
+
+```{r Máx e Mín de hourlySteps$StepTotal}
+hourlySteps_clean %>% 
+  summarize(
+    max_steps = max(StepTotal),
+    min_steps = min(StepTotal)
+  )
+```
+
+### Validação do comprimento do Id
+
+Para validarmos se não houve nenhum erro na formatação do Id, executemos a função abaixo.
+
+```{r Comprimento do hourlySteps$Id}
+table(nchar(as.character(hourlySteps_clean$Id)))
+```
+
+### Consulta de valores nulos
+
+Executemos a consulta abaixo para validar que não há valores nulos.
+
+```{r Valores nullos em hourlySteps}
+colSums(is.na(hourlySteps_clean))
+```
+
+### Padronização do nome das colunas para snake_case
+
+Utilizamos o pacote janitor para realizar a conversão do nome das colunas para snake_case, padrão para manipulação no SQL.
+
+```{r snake_case no hourlySteps}
+hourlySteps_clean <- hourlySteps_clean %>% 
+  clean_names()
+
+head(hourlySteps_clean)
+```
+
+### Exportação do csv limpo
+
+Concluída a limpeza dos dados, realizei a exportação do csv para seguir com a importação no BigQuery.
+
+```{r}
+write_csv(hourlySteps_clean, "hourlySteps_clean.csv")
+```
+
+
+## sleepDay_merged.csv
+
+### Impmortação dos dados csv
+
+```{r Importar sleepDay}
+sleepDay <- read_csv("sleepDay_merged.csv")
+```
+
+### Validação da estrutura dos dados
+
+Com a função ‘str’ validamos a estrutura dos dados, se cada coluna está com o seu devido formato.
+
+```{r str(sleepDay)}
+str(sleepDay)
+```
+
+### Adequação do formato da data e excluir duplicatas
+
+Foi realizada o tranformação do formato da data para o padrão ISO, evitando erros na importação do csv para o BigQuery, juntamente com a exclusão de duplicatas com o ‘distinct’.
+
+```{r sleepDay adequação ISO e duplicatas}
+sleepDay_clean <- sleepDay %>% 
+  #Tranformaçãod a data no formato ISO
+  mutate(SleepDay = mdy_hms(SleepDay)) %>% 
+  #Remoção de linhas duplicadas (idênticas)
+  distinct()
+
+nrow(sleepDay)
+nrow(sleepDay_clean)
+
+head(sleepDay_clean)
+```
+
+Foi possível limparmos 3 registros com informações idênticas (duplicadas) na qual impactaria na qualidade da nossa análise posteriormente.
+
+Ajustamos também a data no formato ISO.
+
+### Validar a relação entre TotalMinuteAsleep x TotalTimeInBed
+
+No conjunto de dados, a coluna 'TotalTimeInBed' representa o tempo que o usuário ficou em repouso para dormir, e o 'TotalMinuteAsleep' representa o tempo que de fato o usuário esteve em um sono.
+Isso faz com que o tempo do usuário na cama não possa ser menor do que o tempo de sono. Pra validarmos essa regra utilizamos da função abaixo.
+
+```{r Relação cama x sono}
+df_validation_sleep <- sleepDay_clean %>% 
+  mutate(
+    sleep_dif = TotalTimeInBed - TotalMinutesAsleep
+  )
+
+sleep_time_validation <- df_validation_sleep %>% 
+  filter(sleep_dif < 0)
+
+nrow(sleep_time_validation)
+```
+
+Como retornou 0 linhas, validamos a consitência entre essas duas variáveis.
+
+### Máximo e mínimo do tempo de sono
+
+Utilizamos da consulta abaixo para validar se não há nenhum registro com o tempo de sono maior que 1440 minutos (24 horas), sendo um valor impossível.
+
+```{r Max e Min de Sleep}
+sleepDay_clean %>% 
+  summarize(
+    max_sleep = max(TotalMinutesAsleep),
+    min_sleep = min(TotalMinutesAsleep),
+    max_bed = max(TotalTimeInBed),
+    min_bed = min(TotalTimeInBed)
+  )
+```
+
+Podemos validar que os valores estão consistentes.
+
+### Validação do comprimento do Id
+
+Para validarmos se não houve nenhum erro na formatação do Id, executemos a função abaixo.
+
+```{r Comprimento do ID em sleep}
+table(nchar(as.character(sleepDay_clean$Id)))
+```
+
+### Consulta de valores nulos
+
+Executemos a consulta abaixo para validar que não há valores nulos.
+
+```{r nulos em Sleep}
+colSums(is.na(sleepDay_clean))
+```
+
+### Padronização do nome das colunas para snake_case
+
+Utilizamos o pacote janitor para realizar a conversão do nome das colunas para snake_case, padrão para manipulação no SQL.
+
+```{r sleep to snake_case}
+sleepDay_clean <- sleepDay_clean %>% 
+  clean_names()
+
+head(sleepDay_clean)
+```
+
+### Exportação do csv limpo
+
+Concluída a limpeza dos dados, realizei a exportação do csv para seguir com a importação no BigQuery.
+
+```{r}
+write_csv(sleepDay_clean, "sleepDay_clean.csv")
+```
+
+
+## Conclusão da limpeza
+
+Dessa forma, realizamos a limpeza e tratamento dos dados para podermos seguir com a importação dos arquivos csv para o BigQuery e seguirmos com a nossa análise.
+
+Para a análise do projeto será utilizado os seguintes arquivos:
+
+* dailyActivity_clean.csv
+* hourlyStep_clean.csv
+* sleepDay_clean.csv
+* weightLogInfo_clean.csv
+
