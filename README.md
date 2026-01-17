@@ -653,7 +653,7 @@ ORDER BY
 
   <h3 id="quantidade-de-usuarias-por-perfil-de-atividade">Quantidade de usuárias por perfil de atividade</h3>
   <p>
-    <em>(Inserir imagem ou link do Tableau aqui)</em><br />
+    ![Quantidade de usuárias por perfil de atividade](bellabeat-case-study/visuals/charts/percentage_of_users.png)
     Visualização para comparar a participação percentual de cada perfil, evidenciando uma distribuição relativamente equilibrada.
   </p>
 
