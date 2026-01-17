@@ -666,7 +666,6 @@ ORDER BY
   <hr />
 
   <h2 id="visualizacao-tableau">Visualização (Tableau)</h2>
-  <p><em>Observação: abaixo estão as seções de visualização. Se você tiver os links públicos do Tableau ou imagens exportadas, pode substituí-las nos placeholders.</em></p>
 
   <h3 id="quantidade-de-usuarias-por-perfil-de-atividade">Quantidade de usuárias por perfil de atividade</h3>
   <p>
